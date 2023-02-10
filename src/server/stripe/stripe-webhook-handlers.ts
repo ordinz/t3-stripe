@@ -76,6 +76,129 @@ export const handleInvoicePaid = async ({
   });
 };
 
+export const handlePriceDeleted = async ({
+  event,
+  prisma,
+}: {
+  event: Stripe.Event;
+  prisma: PrismaClient;
+}) => {
+  const price = event.data.object as Stripe.Price;
+  try {
+    await prisma.price.delete({
+      where: {
+        id: price.id,
+      },
+    });
+  } catch (error) {
+    console.log("👉 price.delete error", error);
+  }
+};
+
+export const handleProductDeleted = async ({
+  event,
+  prisma,
+}: {
+  event: Stripe.Event;
+  prisma: PrismaClient;
+}) => {
+  const product = event.data.object as Stripe.Product;
+  // delete a product in your database
+  try {
+    await prisma.product.delete({
+      where: {
+        id: product.id,
+      },
+    });
+  } catch (error) {
+    console.log("👉 product.delete error", error);
+  }
+};
+
+export const handleProductCreatedOrUpdated = async ({
+  event,
+  prisma,
+}: {
+  event: Stripe.Event;
+  prisma: PrismaClient;
+}) => {
+  const product = event.data.object as Stripe.Product;
+
+  const productAttributes = {
+    name: product.name,
+    description: product.description ? product.description : "",
+    active: product.active,
+    image: product.images[0] ? product.images[0] : "",
+    metadata: product.metadata,
+  };
+
+  // create or update a product in your database
+  try {
+    await prisma.product.upsert({
+      where: {
+        id: product.id,
+      },
+      create: {
+        id: product.id,
+        ...productAttributes,
+      },
+      update: productAttributes,
+    });
+  } catch (error) {
+    console.log("👉 product.upsert error", error);
+  }
+};
+
+export const handlePriceCreatedOrUpdated = async ({
+  event,
+  prisma,
+}: {
+  event: Stripe.Event;
+  prisma: PrismaClient;
+}) => {
+  const price = event.data.object as Stripe.Price;
+
+  const product = await prisma.product.findUnique({
+    where: {
+      id: price.product,
+    },
+  });
+
+  if (!product) {
+    console.log("👉 Product not found", price.product);
+    return;
+  }
+
+  const priceAttributes = {
+    active: price.active,
+    currency: price.currency,
+    interval: price.recurring?.interval || undefined,
+    intervalCount: price.recurring?.interval_count,
+    trialPeriodDays: price.recurring?.trial_period_days || undefined,
+    metadata: price.metadata,
+    nickname: price.nickname,
+    productId: product.id,
+    unitAmount: price.unit_amount,
+    type: price.type,
+  };
+
+  // create or update a price in your database
+  try {
+    await prisma.price.upsert({
+      where: {
+        id: price.id,
+      },
+      create: {
+        id: price.id,
+        ...priceAttributes,
+      },
+      update: priceAttributes,
+    });
+  } catch (error) {
+    console.log("👉 price.upsert error", error);
+  }
+};
+
 export const handleSubscriptionCreatedOrUpdated = async ({
   event,
   prisma,

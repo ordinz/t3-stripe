@@ -4,6 +4,10 @@ import { prisma } from "../../server/db/client";
 import type Stripe from "stripe";
 import { buffer } from "micro";
 import {
+  handlePriceCreatedOrUpdated,
+  handlePriceDeleted,
+  handleProductCreatedOrUpdated,
+  handleProductDeleted,
   handleInvoicePaid,
   handleSubscriptionCanceled,
   handleSubscriptionCreatedOrUpdated,
@@ -34,6 +38,51 @@ export default async function handler(
 
       // Handle the event
       switch (event.type) {
+        case "price.created":
+          // Create a price in your database
+          await handlePriceCreatedOrUpdated({
+            event,
+            prisma,
+          });
+          break;
+        case "price.updated":
+          // Update a price in your database
+          await handlePriceCreatedOrUpdated({
+            event,
+            prisma,
+          });
+          break;
+        case "price.deleted":
+          // Delete a price in your database
+          await handlePriceDeleted({
+            event,
+            prisma,
+          });
+          break;
+        case "product.created":
+          // Create a product in your database
+          await handleProductCreatedOrUpdated({
+            event,
+            stripe,
+            prisma,
+          });
+          break;
+        case "product.updated":
+          // Update a product in your database
+          await handleProductCreatedOrUpdated({
+            event,
+            stripe,
+            prisma,
+          });
+          break;
+        case "product.deleted":
+          // Delete a product in your database
+          await handleProductDeleted({
+            event,
+            stripe,
+            prisma,
+          });
+          break;
         case "invoice.paid":
           // Used to provision services after the trial has ended.
           // The status of the invoice will show up as paid. Store the status in your database to reference when a user accesses your service to avoid hitting rate limits.
