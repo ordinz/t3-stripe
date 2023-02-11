@@ -57,6 +57,7 @@ model User {
   stripeCustomerId         String?
   stripeSubscriptionId     String?
   stripeSubscriptionStatus StripeSubscriptionStatus?
+  subscriptions            Subscription[]
 }
 
 enum StripeSubscriptionStatus {
@@ -106,6 +107,7 @@ model Product {
   metadata Json
 
   prices Price[]
+  subscriptions Subscription[]
 }
 
 model Price {
@@ -134,4 +136,24 @@ model Price {
 
   productId       String
   product         Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  // -- Subscription ID from Stripe e.g. sub_1234.
+  id String @id @unique
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId       String
+  product         Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  // -- The status of the subscription object one of subscription_status type above.
+  status          StripeSubscriptionStatus?
+  // -- Set of key-value pairs used to store additional information about the object in a structured format.
+  metadata Json
+  // -- ID of the price that created this subscription.
+  priceId       String 
+  price         Price      @relation(fields: [priceId], references: [id])
+  quantity Int
+  created DateTime @default(now())
 }

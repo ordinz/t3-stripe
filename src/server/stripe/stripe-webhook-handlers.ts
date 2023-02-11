@@ -208,6 +208,32 @@ export const handleSubscriptionCreatedOrUpdated = async ({
 }) => {
   const subscription = event.data.object as Stripe.Subscription;
   const userId = subscription.metadata.userId;
+  const { product, id: priceId } = subscription.plan;
+
+  const subscriptionAttributes = {
+    status: subscription.status,
+    productId: product,
+    metadata: subscription.metadata,
+    priceId: priceId,
+    quantity: subscription.quantity,
+  };
+
+  try {
+    await prisma.subscription.upsert({
+      where: {
+        id: subscription.id,
+      },
+      create: {
+        id: subscription.id,
+        userId: userId,
+        ...subscriptionAttributes,
+      },
+      update: subscriptionAttributes,
+    });
+  } catch (error) {
+    console.log("👉 subscription.upsert error", error);
+  }
+
 
   // update user with subscription data
   await prisma.user.update({
