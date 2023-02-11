@@ -5,6 +5,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { trpc } from "../utils/trpc";
 import { authOptions } from "./api/auth/[...nextauth]";
+import { Products } from "./components/Products";
 
 const SignoutButton = () => {
   return (
@@ -19,50 +20,28 @@ const SignoutButton = () => {
   );
 };
 
-const UpgradeButton = ({ priceId }) => {
-  const { mutateAsync: createCheckoutSession } =
-    trpc.stripe.createCheckoutSession.useMutation();
-  const { push } = useRouter();
-  return (
-    <button
-      className="w-fit cursor-pointer rounded-md bg-blue-500 px-5 py-2 text-lg font-semibold text-white shadow-sm duration-150 hover:bg-blue-600"
-      onClick={async () => {
-        const { checkoutUrl } = await createCheckoutSession({
-          priceId: priceId,
-        });
-        if (checkoutUrl) {
-          push(checkoutUrl);
-        }
-      }}
-    >
-      Upgrade account
-    </button>
-  );
-};
+const SubscriptionStatus = () => {
+  const { data: subscriptionStatus, isLoading } =
+    trpc.user.subscriptionStatus.useQuery();
 
-const ManageBillingButton = () => {
-  const { mutateAsync: createBillingPortalSession } =
-    trpc.stripe.createBillingPortalSession.useMutation();
-  const { push } = useRouter();
+  if (isLoading) {
+    return <p>Subscription Status Loading...</p>;
+  }
+
   return (
-    <button
-      className="w-fit cursor-pointer rounded-md bg-blue-500 px-5 py-2 text-lg font-semibold text-white shadow-sm duration-150 hover:bg-blue-600"
-      onClick={async () => {
-        const { billingPortalUrl } = await createBillingPortalSession();
-        if (billingPortalUrl) {
-          push(billingPortalUrl);
-        }
-      }}
-    >
-      Manage subscription and billing
-    </button>
+    <>
+      <div className="grid grid-cols-2 gap-4 rounded border border-dotted border-gray-400 p-5">
+        <p>Subscription Active:</p>
+        <p>{subscriptionStatus?.active ? "✅" : "❌"}</p>
+        <p>Subscription Status:</p>
+        <p>{subscriptionStatus?.status}</p>
+      </div>
+    </>
   );
 };
 
 const Dashboard: NextPage = () => {
-  const { data: subscriptionStatus, isLoading } =
-    trpc.user.subscriptionStatus.useQuery();
-  const { data: products } = trpc.stripe.products.useQuery();
+  // const { data: products, isLoading } = trpc.user.subscriptionStatus.useQuery();
 
   return (
     <>
@@ -75,36 +54,13 @@ const Dashboard: NextPage = () => {
         <h1 className="text-5xl font-extrabold leading-normal text-gray-700">
           T3 <span className="text-[#5433FF]">Stripe</span> Dashboard
         </h1>
-        <p className="text-2xl text-gray-700">Products:</p>
-        <div className="mt-3 flex items-center justify-center gap-4">
-          {products?.map((product) => (
-            <div
-              key={product.id}
-              className="flex flex-col gap-2 rounded-md border border-black p-5"
-            >
-              <p className="text-xl text-gray-700">{product.name}</p>
-              <p className="rounded bg-gray-100 p-2 text-lg text-gray-700">
-                {product.description}
-              </p>
-              {!isLoading && subscriptionStatus === null && (
-                <>
-                  <UpgradeButton priceId={product.prices[0]?.id} />
-                </>
-              )}
-            </div>
-          ))}
+        <div className="my-10 flex flex-col gap-10">
+          <Products />
+          <SubscriptionStatus />
         </div>
         <p className="text-2xl text-gray-700">Actions:</p>
         <div className="mt-3 flex flex-col items-center justify-center gap-4">
           <SignoutButton />
-          {!isLoading && subscriptionStatus !== null && (
-            <>
-              <p className="text-xl text-gray-700">
-                Your subscription is {subscriptionStatus}.
-              </p>
-              <ManageBillingButton />
-            </>
-          )}
         </div>
       </main>
     </>

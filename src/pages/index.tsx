@@ -3,6 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import { Products } from "./components/Products";
 
 const Home: NextPage = () => {
   return (
@@ -28,6 +29,9 @@ const Home: NextPage = () => {
             description="Infrastructure and APIs to accept payments online"
             documentation="https://stripe.com/docs"
           />
+        </div>
+        <div className="my-10">
+          <Products />
         </div>
         <SignInButton />
       </main>
