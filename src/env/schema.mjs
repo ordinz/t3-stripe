@@ -20,7 +20,6 @@ export const serverSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string(),
   STRIPE_PK: z.string(),
   STRIPE_SK: z.string(),
-  STRIPE_PRICE_ID: z.string(),
   STRIPE_WEBHOOK_SECRET: z.string(),
 });
 
