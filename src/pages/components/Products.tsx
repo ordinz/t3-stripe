@@ -88,6 +88,8 @@ export const UpgradeOrSignInButton = ({
 
   if (!isLoading && !isSubscribed)
     return <UpgradeButton priceId={product.prices[0]?.id} />;
+
+  return <></>;
 };
 
 const ManageBillingButton = () => {
