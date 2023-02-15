@@ -8,10 +8,11 @@ import { useRouter } from "next/router";
 export const Products = () => {
   const { data: products, isLoading } = trpc.user.products.useQuery();
 
-  const Price = ({ price }: { price: number | undefined }): JSX.Element => {
-    const n = Number(price) / 100;
+  const Price = ({ price }: { price: bigint | undefined }): JSX.Element => {
+    const n = price ? Number(price) / 100 : 0;
     return <>${n}</>;
   };
+
 
   return (
     <div>
