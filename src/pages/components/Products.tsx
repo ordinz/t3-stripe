@@ -1,9 +1,7 @@
 import { SignInButton } from "./SignInButton";
 import { useSession } from "next-auth/react";
-import Img from "next/image";
 import { trpc } from "../../utils/trpc";
 import { useRouter } from "next/router";
-
 
 export const Products = () => {
   const { data: products, isLoading } = trpc.user.products.useQuery();
@@ -12,7 +10,6 @@ export const Products = () => {
     const n = price ? Number(price) / 100 : 0;
     return <>${n}</>;
   };
-
 
   return (
     <div>
@@ -84,7 +81,7 @@ export const UpgradeOrSignInButton = ({
 }: UpgradeOrSignInButtonProps) => {
   const { status } = useSession();
 
-  if (isLoading) return null;
+  if (isLoading) return <></>;
   if (status === "unauthenticated") {
     return <SignInButton />;
   }

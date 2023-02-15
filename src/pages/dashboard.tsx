@@ -2,7 +2,6 @@ import type { GetServerSideProps, NextPage } from "next";
 import { unstable_getServerSession } from "next-auth";
 import { signOut } from "next-auth/react";
 import Head from "next/head";
-import { useRouter } from "next/router";
 import { trpc } from "../utils/trpc";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { Products } from "./components/Products";
