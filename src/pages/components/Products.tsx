@@ -50,7 +50,7 @@ export const Products = () => {
               <UpgradeOrSignInButton
                 isLoading={isLoading}
                 isSubscribed={product.subscriptions?.length > 0}
-                product={product}
+                priceId={product.prices[0]?.id}
               />
             </div>
           </div>
@@ -63,18 +63,13 @@ export const Products = () => {
 interface UpgradeOrSignInButtonProps {
   isLoading: boolean;
   isSubscribed: boolean;
-  product: {
-    prices: {
-      id: string;
-      unitAmount: string;
-    }[];
-  };
+  priceId: string | undefined;
 }
 
 export const UpgradeOrSignInButton = ({
   isLoading,
   isSubscribed,
-  product,
+  priceId,
 }: UpgradeOrSignInButtonProps) => {
   const { status } = useSession();
 
@@ -83,8 +78,7 @@ export const UpgradeOrSignInButton = ({
     return <SignInButton />;
   }
 
-  if (!isLoading && !isSubscribed)
-    return <UpgradeButton priceId={product.prices[0]?.id} />;
+  if (!isLoading && !isSubscribed) return <UpgradeButton priceId={priceId} />;
 
   return <></>;
 };
