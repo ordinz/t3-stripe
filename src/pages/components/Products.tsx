@@ -4,12 +4,12 @@ import Img from "next/image";
 import { trpc } from "../../utils/trpc";
 import { useRouter } from "next/router";
 
-export const Products = (children) => {
+export const Products = () => {
   const { data: products, isLoading } = trpc.user.products.useQuery();
   const isSubscribed = products?.some((product) => product.subscribed);
 
   const Price = ({ product }) => {
-    const n = parseInt(product.prices[0].unitAmount) / 100;
+    const n = parseInt(product.prices[0]?.unitAmount) / 100;
     return <>${n}</>;
   };
 
@@ -50,7 +50,7 @@ export const Products = (children) => {
               </h1>
               {!isLoading && product.subscribed && <ManageBillingButton />}
 
-              <AuthUpgradeButton
+              <UpgradeOrSignInButton
                 isLoading={isLoading}
                 isSubscribed={isSubscribed}
                 product={product}
@@ -63,16 +63,31 @@ export const Products = (children) => {
   );
 };
 
-const AuthUpgradeButton = ({ isLoading, isSubscribed, product }) => {
+interface UpgradeOrSignInButtonProps {
+  isLoading: boolean;
+  isSubscribed: boolean;
+  product: {
+    prices: {
+      id: string;
+      unitAmount: string;
+    }[];
+  };
+}
+
+export const UpgradeOrSignInButton = ({
+  isLoading,
+  isSubscribed,
+  product,
+}: UpgradeOrSignInButtonProps) => {
   const { status } = useSession();
 
-  if (isLoading) return;
+  if (isLoading) return null;
   if (status === "unauthenticated") {
     return <SignInButton />;
   }
 
   if (!isLoading && !isSubscribed)
-    return <UpgradeButton priceId={product.prices[0].id} />;
+    return <UpgradeButton priceId={product.prices[0]?.id} />;
 };
 
 const ManageBillingButton = () => {
@@ -94,7 +109,11 @@ const ManageBillingButton = () => {
   );
 };
 
-const UpgradeButton = ({ priceId }) => {
+interface UpgradeButtonProps {
+  priceId: string;
+}
+
+export const UpgradeButton = ({ priceId }: UpgradeButtonProps) => {
   const { mutateAsync: createCheckoutSession } =
     trpc.stripe.createCheckoutSession.useMutation();
   const { push } = useRouter();
