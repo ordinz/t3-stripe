@@ -8,15 +8,14 @@ interface Product {
   id: string;
   name: string;
   description: string;
-  subscribed: boolean;
   prices: { id: string; unitAmount: string }[];
 }
 
 export const Products = () => {
   const { data: products, isLoading } = trpc.user.products.useQuery();
-  const isSubscribed = products?.some(
-    (product) => product.subscriptions?.length > 0
-  );
+  // const isSubscribed = products?.some(
+  //   (product) => product.subscriptions?.length > 0
+  // );
 
   const Price = ({ product }: { product: Product }) => {
     const n =
