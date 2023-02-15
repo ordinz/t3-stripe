@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 import type { PrismaClient } from "@prisma/client";
 import type Stripe from "stripe";
 
@@ -171,19 +169,6 @@ export const handlePriceCreatedOrUpdated = async ({
     return;
   }
 
-  const priceAttributes = {
-    active: price.active,
-    currency: price.currency,
-    interval: price.recurring?.interval || undefined,
-    intervalCount: price.recurring?.interval_count,
-    trialPeriodDays: price.recurring?.trial_period_days || undefined,
-    metadata: price.metadata,
-    nickname: price.nickname,
-    productId: product.id,
-    unitAmount: price.unit_amount,
-    type: price.type,
-  };
-
   // create or update a price in your database
   try {
     await prisma.price.upsert({
@@ -192,9 +177,29 @@ export const handlePriceCreatedOrUpdated = async ({
       },
       create: {
         id: price.id,
-        ...priceAttributes,
+        active: price.active,
+        currency: price.currency,
+        interval: price.recurring?.interval || "",
+        intervalCount: price.recurring?.interval_count || 0,
+        trialPeriodDays: price.recurring?.trial_period_days || 0,
+        metadata: price.metadata,
+        nickname: price.nickname,
+        productId: product.id,
+        unitAmount: price.unit_amount || 0,
+        type: price.type,
       },
-      update: priceAttributes,
+      update: {
+        active: price.active,
+        currency: price.currency,
+        interval: price.recurring?.interval,
+        intervalCount: price.recurring?.interval_count,
+        trialPeriodDays: price.recurring?.trial_period_days || 0,
+        metadata: price.metadata,
+        nickname: price.nickname,
+        productId: product.id,
+        unitAmount: price.unit_amount || 0,
+        type: price.type,
+      },
     });
   } catch (error) {
     console.log("👉 price.upsert error", error);
