@@ -50,7 +50,7 @@ export const Products = () => {
               <UpgradeOrSignInButton
                 isLoading={isLoading}
                 isSubscribed={product.subscriptions?.length > 0}
-                priceId={product.prices[0]?.id}
+                priceId={product.prices[0]?.id ? product.prices[0]?.id : ""}
               />
             </div>
           </div>
@@ -63,7 +63,7 @@ export const Products = () => {
 interface UpgradeOrSignInButtonProps {
   isLoading: boolean;
   isSubscribed: boolean;
-  priceId: string | undefined;
+  priceId: string;
 }
 
 export const UpgradeOrSignInButton = ({
