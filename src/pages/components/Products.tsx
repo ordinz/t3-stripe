@@ -6,12 +6,6 @@ import { useRouter } from "next/router";
 export const Products = () => {
   const { data: products, isLoading } = trpc.user.products.useQuery();
 
-  const Price = ({ price }: { price: string | undefined }): JSX.Element => {
-    const n = price ? Number(price) / 100 : 0;
-    if (isNaN(n)) return <>-</>;
-    return <>${n.toFixed(2)}</>;
-  };
-
   return (
     <div>
       <p className="text-2xl text-gray-700">Products:</p>
@@ -45,7 +39,9 @@ export const Products = () => {
 
             <div className="flex items-center justify-between bg-gray-900 px-4 py-2">
               <h1 className="text-lg font-bold text-white">
-                {!isLoading && <Price price={product.prices[0]?.unitAmount} />}
+                {!isLoading && product.prices[0]?.unitAmount
+                  ? Number(product.prices[0]?.unitAmount) / 100
+                  : 0}
               </h1>
               {!isLoading && product.subscriptions?.length > 0 && (
                 <ManageBillingButton />
