@@ -4,12 +4,26 @@ import Img from "next/image";
 import { trpc } from "../../utils/trpc";
 import { useRouter } from "next/router";
 
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  subscribed: boolean;
+  prices: { id: string; unitAmount: string }[];
+}
+
 export const Products = () => {
   const { data: products, isLoading } = trpc.user.products.useQuery();
-  const isSubscribed = products?.some((product) => product.subscribed);
+  const isSubscribed = products?.some(
+    (product) => product.subscriptions.length > 0
+  );
 
-  const Price = ({ product }) => {
-    const n = parseInt(product.prices[0]?.unitAmount) / 100;
+  const Price = ({ product }: { product: Product }) => {
+    const n =
+      product.prices && product.prices[0]
+        ? parseInt(product.prices[0].unitAmount) / 100
+        : 0;
+
     return <>${n}</>;
   };
 

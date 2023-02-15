@@ -63,7 +63,6 @@ export default async function handler(
           // Create a product in your database
           await handleProductCreatedOrUpdated({
             event,
-            stripe,
             prisma,
           });
           break;
@@ -71,7 +70,6 @@ export default async function handler(
           // Update a product in your database
           await handleProductCreatedOrUpdated({
             event,
-            stripe,
             prisma,
           });
           break;
@@ -79,7 +77,6 @@ export default async function handler(
           // Delete a product in your database
           await handleProductDeleted({
             event,
-            stripe,
             prisma,
           });
           break;

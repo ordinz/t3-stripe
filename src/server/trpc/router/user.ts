@@ -25,10 +25,6 @@ export const userRouter = router({
       throw new Error("Could not find products");
     }
 
-    data.forEach((product) => {
-      product.subscribed = product.subscriptions?.length > 0;
-    });
-
     return data;
   }),
 
