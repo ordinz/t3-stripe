@@ -1,6 +1,9 @@
+import { SignInButton } from "./SignInButton";
+import { useSession } from "next-auth/react";
 import Img from "next/image";
 import { trpc } from "../../utils/trpc";
 import { useRouter } from "next/router";
+
 export const Products = (children) => {
   const { data: products, isLoading } = trpc.user.products.useQuery();
   const isSubscribed = products?.some((product) => product.subscribed);
@@ -46,17 +49,30 @@ export const Products = (children) => {
                 {!isLoading && <Price product={product} />}
               </h1>
               {!isLoading && product.subscribed && <ManageBillingButton />}
-              {!isLoading && !isSubscribed && (
-                <>
-                  <UpgradeButton priceId={product.prices[0]?.id} />
-                </>
-              )}
+
+              <AuthUpgradeButton
+                isLoading={isLoading}
+                isSubscribed={isSubscribed}
+                product={product}
+              />
             </div>
           </div>
         ))}
       </div>
     </div>
   );
+};
+
+const AuthUpgradeButton = ({ isLoading, isSubscribed, product }) => {
+  const { status } = useSession();
+
+  if (isLoading) return;
+  if (status === "unauthenticated") {
+    return <SignInButton />;
+  }
+
+  if (!isLoading && !isSubscribed)
+    return <UpgradeButton priceId={product.prices[0].id} />;
 };
 
 const ManageBillingButton = () => {
