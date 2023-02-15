@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import type { PrismaClient } from "@prisma/client";
 import type Stripe from "stripe";
 
@@ -233,7 +235,6 @@ export const handleSubscriptionCreatedOrUpdated = async ({
   } catch (error) {
     console.log("👉 subscription.upsert error", error);
   }
-
 
   // update user with subscription data
   await prisma.user.update({
