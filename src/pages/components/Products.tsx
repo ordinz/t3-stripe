@@ -15,7 +15,7 @@ interface Product {
 export const Products = () => {
   const { data: products, isLoading } = trpc.user.products.useQuery();
   const isSubscribed = products?.some(
-    (product) => product.subscriptions.length > 0
+    (product) => product.subscriptions?.length > 0
   );
 
   const Price = ({ product }: { product: Product }) => {
@@ -62,11 +62,13 @@ export const Products = () => {
               <h1 className="text-lg font-bold text-white">
                 {!isLoading && <Price product={product} />}
               </h1>
-              {!isLoading && product.subscribed && <ManageBillingButton />}
+              {!isLoading && product.subscriptions?.length > 0 && (
+                <ManageBillingButton />
+              )}
 
               <UpgradeOrSignInButton
                 isLoading={isLoading}
-                isSubscribed={isSubscribed}
+                isSubscribed={product.subscriptions?.length > 0}
                 product={product}
               />
             </div>
