@@ -6,9 +6,10 @@ import { useRouter } from "next/router";
 export const Products = () => {
   const { data: products, isLoading } = trpc.user.products.useQuery();
 
-  const Price = ({ price }: { price: bigint | undefined }): JSX.Element => {
+  const Price = ({ price }: { price: string | undefined }): JSX.Element => {
     const n = price ? Number(price) / 100 : 0;
-    return <>${n}</>;
+    if (isNaN(n)) return <>-</>;
+    return <>${n.toFixed(2)}</>;
   };
 
   return (
