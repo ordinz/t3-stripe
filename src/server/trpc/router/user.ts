@@ -1,6 +1,34 @@
-import { router, protectedProcedure } from "../trpc";
+import { router, protectedProcedure, publicProcedure } from "../trpc";
+
+type StripeSubscriptionStatus = "active" | "trialing" | "past_due" | "unpaid";
+
+export const activeStripeSubscribtionStatuses: StripeSubscriptionStatus[] = [
+  "active",
+  "trialing",
+  "past_due",
+  "unpaid",
+];
 
 export const userRouter = router({
+  activeSubscriptions: protectedProcedure.query(async ({ ctx }) => {
+    const { session, prisma } = ctx;
+
+    if (!session.user?.id) {
+      throw new Error("Not authenticated");
+    }
+
+    const data = await prisma.subscription.findMany({
+      where: {
+        userId: session?.user?.id,
+        status: {
+          in: activeStripeSubscribtionStatuses,
+        },
+      },
+    });
+
+    return data;
+  }),
+
   subscriptionStatus: protectedProcedure.query(async ({ ctx }) => {
     const { session, prisma } = ctx;
 
@@ -8,19 +36,20 @@ export const userRouter = router({
       throw new Error("Not authenticated");
     }
 
-    const data = await prisma.user.findUnique({
+    const data = await prisma.subscription.findFirst({
       where: {
-        id: session.user?.id,
-      },
-      select: {
-        stripeSubscriptionStatus: true,
+        userId: session.user?.id,
+        status: {
+          in: activeStripeSubscribtionStatuses,
+        },
       },
     });
 
-    if (!data) {
-      throw new Error("Could not find user");
-    }
+    if (!data || !data.status) return {};
 
-    return data.stripeSubscriptionStatus;
+    return {
+      active: data.status === "active",
+      status: data.status,
+    };
   }),
 });

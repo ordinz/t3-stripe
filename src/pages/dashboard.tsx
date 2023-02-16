@@ -2,9 +2,10 @@ import type { GetServerSideProps, NextPage } from "next";
 import { unstable_getServerSession } from "next-auth";
 import { signOut } from "next-auth/react";
 import Head from "next/head";
-import { useRouter } from "next/router";
 import { trpc } from "../utils/trpc";
 import { authOptions } from "./api/auth/[...nextauth]";
+import { Products } from "../components/Products";
+import { useRouter } from "next/router";
 
 const SignoutButton = () => {
   return (
@@ -19,48 +20,29 @@ const SignoutButton = () => {
   );
 };
 
-const UpgradeButton = () => {
-  const { mutateAsync: createCheckoutSession } =
-    trpc.stripe.createCheckoutSession.useMutation();
-  const { push } = useRouter();
-  return (
-    <button
-      className="w-fit cursor-pointer rounded-md bg-blue-500 px-5 py-2 text-lg font-semibold text-white shadow-sm duration-150 hover:bg-blue-600"
-      onClick={async () => {
-        const { checkoutUrl } = await createCheckoutSession();
-        if (checkoutUrl) {
-          push(checkoutUrl);
-        }
-      }}
-    >
-      Upgrade account
-    </button>
-  );
-};
+const SubscriptionStatus = () => {
+  const { data: subscriptionStatus, isLoading } =
+    trpc.user.subscriptionStatus.useQuery();
 
-const ManageBillingButton = () => {
-  const { mutateAsync: createBillingPortalSession } =
-    trpc.stripe.createBillingPortalSession.useMutation();
-  const { push } = useRouter();
+  if (isLoading) {
+    return <p>Subscription Status Loading...</p>;
+  }
+
   return (
-    <button
-      className="w-fit cursor-pointer rounded-md bg-blue-500 px-5 py-2 text-lg font-semibold text-white shadow-sm duration-150 hover:bg-blue-600"
-      onClick={async () => {
-        const { billingPortalUrl } = await createBillingPortalSession();
-        if (billingPortalUrl) {
-          push(billingPortalUrl);
-        }
-      }}
-    >
-      Manage subscription and billing
-    </button>
+    <>
+      <div className="grid grid-cols-2 gap-4 rounded border border-dotted border-gray-400 p-5">
+        <p>Subscription Active:</p>
+        <p>{subscriptionStatus?.active ? "✅" : "❌"}</p>
+        <p>Subscription Status:</p>
+        <p>{subscriptionStatus?.status}</p>
+        <p></p>
+        <p>{subscriptionStatus?.active && <ManageBillingButton />}</p>
+      </div>
+    </>
   );
 };
 
 const Dashboard: NextPage = () => {
-  const { data: subscriptionStatus, isLoading } =
-    trpc.user.subscriptionStatus.useQuery();
-
   return (
     <>
       <Head>
@@ -72,23 +54,13 @@ const Dashboard: NextPage = () => {
         <h1 className="text-5xl font-extrabold leading-normal text-gray-700">
           T3 <span className="text-[#5433FF]">Stripe</span> Dashboard
         </h1>
+        <div className="my-10 flex flex-col gap-10">
+          <Products />
+          <SubscriptionStatus />
+        </div>
         <p className="text-2xl text-gray-700">Actions:</p>
         <div className="mt-3 flex flex-col items-center justify-center gap-4">
           <SignoutButton />
-          {!isLoading && subscriptionStatus !== null && (
-            <>
-              <p className="text-xl text-gray-700">
-                Your subscription is {subscriptionStatus}.
-              </p>
-              <ManageBillingButton />
-            </>
-          )}
-          {!isLoading && subscriptionStatus === null && (
-            <>
-              <p className="text-xl text-gray-700">You are not subscribed!!!</p>
-              <UpgradeButton />
-            </>
-          )}
         </div>
       </main>
     </>
@@ -119,3 +91,22 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 };
 
 export default Dashboard;
+
+const ManageBillingButton = () => {
+  const { mutateAsync: createBillingPortalSession } =
+    trpc.stripe.createBillingPortalSession.useMutation();
+  const { push } = useRouter();
+  return (
+    <button
+      className="transform rounded bg-black px-2 py-1 text-xs font-semibold uppercase text-white transition-colors duration-300 hover:bg-gray-700 focus:bg-gray-400 focus:outline-none"
+      onClick={async () => {
+        const { billingPortalUrl } = await createBillingPortalSession();
+        if (billingPortalUrl) {
+          push(billingPortalUrl);
+        }
+      }}
+    >
+      Manage subscription and billing
+    </button>
+  );
+};
