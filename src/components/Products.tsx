@@ -39,6 +39,7 @@ export const Products = () => {
 
             <div className="flex items-center justify-between bg-gray-900 px-4 py-2">
               <h1 className="text-lg font-bold text-white">
+                $
                 {!isLoading && product.prices[0]?.unitAmount
                   ? Number(product.prices[0]?.unitAmount) / 100
                   : 0}
