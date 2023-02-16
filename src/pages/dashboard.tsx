@@ -43,8 +43,6 @@ const SubscriptionStatus = () => {
 };
 
 const Dashboard: NextPage = () => {
-  // const { data: products, isLoading } = trpc.user.subscriptionStatus.useQuery();
-
   return (
     <>
       <Head>
