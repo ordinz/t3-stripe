@@ -1,6 +1,6 @@
 import { SignInButton } from "./SignInButton";
 import { useSession } from "next-auth/react";
-import { trpc } from "../../utils/trpc";
+import { trpc } from "../utils/trpc";
 import { useRouter } from "next/router";
 
 export const Products = () => {

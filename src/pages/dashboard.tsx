@@ -4,7 +4,7 @@ import { signOut } from "next-auth/react";
 import Head from "next/head";
 import { trpc } from "../utils/trpc";
 import { authOptions } from "./api/auth/[...nextauth]";
-import { Products } from "./components/Products";
+import { Products } from "../components/Products";
 
 const SignoutButton = () => {
   return (

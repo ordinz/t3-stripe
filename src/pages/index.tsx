@@ -1,8 +1,8 @@
 import { type NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
-import { Products } from "./components/Products";
-import { SignInButton } from "./components/SignInButton";
+import { Products } from "../components/Products";
+import { SignInButton } from "../components/SignInButton";
 
 const Home: NextPage = () => {
   return (
