@@ -215,15 +215,18 @@ export const handleSubscriptionCreatedOrUpdated = async ({
 }) => {
   const subscription = event.data.object as Stripe.Subscription;
   const userId = subscription.metadata.userId;
-  const { product, id: priceId } = subscription.plan;
+  const price = subscription.items.data[0]?.price;
 
-  const subscriptionAttributes = {
-    status: subscription.status,
-    productId: product,
-    metadata: subscription.metadata,
-    priceId: priceId,
-    quantity: subscription.quantity,
-  };
+  if (!price) {
+    console.log("👉 Price not found", subscription.items.data[0]);
+    return;
+  }
+
+  const productId = price?.product;
+  if (!productId) {
+    console.log("👉 Product not found", price);
+    return;
+  }
 
   try {
     await prisma.subscription.upsert({
@@ -231,11 +234,19 @@ export const handleSubscriptionCreatedOrUpdated = async ({
         id: subscription.id,
       },
       create: {
-        id: subscription.id,
-        userId: userId,
-        ...subscriptionAttributes,
+        id: String(subscription.id),
+        userId: String(userId),
+        status: subscription.status,
+        productId: String(productId),
+        metadata: subscription.metadata,
+        priceId: price?.id,
       },
-      update: subscriptionAttributes,
+      update: {
+        status: subscription.status,
+        productId: String(productId),
+        metadata: subscription.metadata,
+        priceId: price?.id,
+      },
     });
   } catch (error) {
     console.log("👉 subscription.upsert error", error);

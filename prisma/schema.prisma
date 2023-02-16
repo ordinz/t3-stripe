@@ -154,6 +154,5 @@ model Subscription {
   // -- ID of the price that created this subscription.
   priceId       String 
   price         Price      @relation(fields: [priceId], references: [id])
-  quantity Int
   created DateTime @default(now())
 }
