@@ -5,6 +5,7 @@ import Head from "next/head";
 import { trpc } from "../utils/trpc";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { Products } from "../components/Products";
+import { useRouter } from "next/router";
 
 const SignoutButton = () => {
   return (
@@ -34,6 +35,8 @@ const SubscriptionStatus = () => {
         <p>{subscriptionStatus?.active ? "✅" : "❌"}</p>
         <p>Subscription Status:</p>
         <p>{subscriptionStatus?.status}</p>
+        <p></p>
+        <p>{subscriptionStatus?.active && <ManageBillingButton />}</p>
       </div>
     </>
   );
@@ -90,3 +93,22 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 };
 
 export default Dashboard;
+
+const ManageBillingButton = () => {
+  const { mutateAsync: createBillingPortalSession } =
+    trpc.stripe.createBillingPortalSession.useMutation();
+  const { push } = useRouter();
+  return (
+    <button
+      className="transform rounded bg-black px-2 py-1 text-xs font-semibold uppercase text-white transition-colors duration-300 hover:bg-gray-700 focus:bg-gray-400 focus:outline-none"
+      onClick={async () => {
+        const { billingPortalUrl } = await createBillingPortalSession();
+        if (billingPortalUrl) {
+          push(billingPortalUrl);
+        }
+      }}
+    >
+      Manage subscription and billing
+    </button>
+  );
+};
