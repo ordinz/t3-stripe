@@ -1,29 +1,30 @@
 import { router, protectedProcedure, publicProcedure } from "../trpc";
 
+type StripeSubscriptionStatus = "active" | "trialing" | "past_due" | "unpaid";
+
+export const activeStripeSubscribtionStatuses: StripeSubscriptionStatus[] = [
+  "active",
+  "trialing",
+  "past_due",
+  "unpaid",
+];
+
 export const userRouter = router({
-  products: publicProcedure.query(async ({ ctx }) => {
+  activeSubscriptions: protectedProcedure.query(async ({ ctx }) => {
     const { session, prisma } = ctx;
 
-    const data = await prisma.product.findMany({
+    if (!session.user?.id) {
+      throw new Error("Not authenticated");
+    }
+
+    const data = await prisma.subscription.findMany({
       where: {
-        active: true,
-        prices: { some: {} },
-      },
-      include: {
-        prices: {},
-        subscriptions: session?.user?.id
-          ? {
-              where: {
-                userId: session?.user?.id,
-              },
-            }
-          : false,
+        userId: session?.user?.id,
+        status: {
+          in: activeStripeSubscribtionStatuses,
+        },
       },
     });
-
-    if (!data) {
-      throw new Error("Could not find products");
-    }
 
     return data;
   }),
@@ -38,7 +39,9 @@ export const userRouter = router({
     const data = await prisma.subscription.findFirst({
       where: {
         userId: session.user?.id,
-        status: "active",
+        status: {
+          in: activeStripeSubscribtionStatuses,
+        },
       },
     });
 

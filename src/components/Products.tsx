@@ -2,9 +2,24 @@ import { SignInButton } from "./SignInButton";
 import { useSession } from "next-auth/react";
 import { trpc } from "../utils/trpc";
 import { useRouter } from "next/router";
+import type { Subscription } from "@prisma/client";
 
 export const Products = () => {
-  const { data: products, isLoading } = trpc.user.products.useQuery();
+  const { data: products, isLoading } = trpc.products.all.useQuery();
+  const { status } = useSession();
+
+  let activeSubscriptions: Subscription[] = [];
+  let isLoadingActiveSubscriptions = false;
+
+  if (status === "authenticated") {
+    const result = trpc.user.activeSubscriptions.useQuery();
+    activeSubscriptions = result.data ?? [];
+    isLoadingActiveSubscriptions = result.isLoading;
+  }
+
+  if (isLoading || isLoadingActiveSubscriptions) {
+    return <></>;
+  }
 
   return (
     <div>
@@ -44,13 +59,20 @@ export const Products = () => {
                   ? Number(product.prices[0]?.unitAmount) / 100
                   : 0}
               </h1>
-              {!isLoading && product.subscriptions?.length > 0 && (
-                <ManageBillingButton />
-              )}
+              {!isLoading &&
+                activeSubscriptions?.some((subscription) => {
+                  return subscription.productId === product.id;
+                }) && <ManageBillingButton />}
 
               <UpgradeOrSignInButton
                 isLoading={isLoading}
-                isSubscribed={product.subscriptions?.length > 0}
+                isSubscribed={
+                  activeSubscriptions?.some((subscription) => {
+                    return subscription.productId === product.id;
+                  })
+                    ? true
+                    : false
+                }
                 priceId={product.prices[0]?.id ? product.prices[0]?.id : ""}
               />
             </div>
